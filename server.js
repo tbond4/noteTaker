@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const fs =require("fs");
+const { BADFAMILY } = require("dns");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -13,7 +14,6 @@ app.use(express.json());
 app.get("/api/notes",function(req,res){
   // should read the db.json file and return all saved notes as JSON. use fs .THEN JSON.parse() and res.json()
   let db;
-  console.log("test");
   fs.readFile("./db/db.json", (err, data) => {
     if (err) throw err;
     db = JSON.parse(data);
@@ -31,10 +31,12 @@ app.post("/api/notes", function(req,res){
     if (err) throw err;
     db = JSON.parse(data);
     db.push(newNote);
-
+    for(let i=0;i<db.length;i++){
+      db[i].id=i;
+    }
     fs.writeFile("./db/db.json",JSON.stringify(db),(err) => {
       if (err) throw err;
-      console.log('The file has been saved!');
+      console.log('The Note has been saved!');
     });
     res.json(newNote);
   });
@@ -42,23 +44,33 @@ app.post("/api/notes", function(req,res){
 })
 
 app.delete("/api/notes/:id", function(req,res){
-  // acess id from req.params.id
-  let id=req.params.id;
-//fs read, parse, 
+let ID=req.params.id;
 let db;
-fs.readFile("./db/db.json", (err, data) => {
-  if (err) throw err;
-  db = JSON.parse(data);
+
+let bd = [];
+  fs.readFile("./db/db.json", (err, data) => {
+    if (err) throw err;
+
+    db = JSON.parse(data);
+
+    for(let i=0;i<db.length;i++){
+      if(db[i].id !=ID){
+        bd.push(db[i])
+      }
+    }
+
+    fs.writeFile("./db/db.json",JSON.stringify(bd),(err) => {
+      if (err) throw err;
+      console.log('The Note has been deleted!');
+    });
+    res.end("Success");
 });
 //findindex
 //remove with splice
 
 // or filter
 //myarray = myarray.filter(element =>{element.id !== req.params.id})
-db=db.filter(e =>{e.id !== id});
 //fs write
-fs.appendFile("./db/db.json",JSON.stringify(db));
- res.end("Success!");
 // return sucess messeg
 });
 
