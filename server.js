@@ -36,6 +36,7 @@ app.post("/api/notes", function(req,res){
       if (err) throw err;
       console.log('The file has been saved!');
     });
+    res.json(newNote);
   });
   
 })
